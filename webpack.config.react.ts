@@ -9,7 +9,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 // -------------------------------------------------//
 const devServer: DevServerConfiguration = {
   historyApiFallback: true,
-  port: 8080,
+  port: 8081,
   client: {
     logging: 'none',
   },
@@ -28,7 +28,8 @@ export default (): WebpackConfiguration => {
     devServer,
     devtool: 'hidden-source-map',
     entry: {
-      index: path.resolve('./src/vue.ts'),
+      index: path.resolve('./src/react.tsx'),
+      // index: path.resolve('./src/vue.ts'),
     },
     output: {
       // publicPath: '/', // if use BrowserRouter

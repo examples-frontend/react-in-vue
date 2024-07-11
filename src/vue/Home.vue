@@ -1,7 +1,7 @@
 <template>
     <div id="vue-home">
-        <h1>👋Hello world🌎</h1>
-        <div  ref="reactNode" ></div>
+        <h1>This is home page</h1>
+        <div ref="reactNode"></div>
     </div>
 </template>
 
@@ -16,10 +16,21 @@ const reactNode = ref(null);
 let reactApp = null;
 
   onMounted(() => {
-    reactApp = render(reactNode.value)
+    reactApp = render(reactNode.value);
+    console.log('Mounted');
   })
 
   onUnmounted(() => {
-    console.log(reactApp);
+    if( reactApp) {
+      reactApp();
+      console.log('Unmounted');
+    }
   })
 </script>
+
+<style>
+/* #vue-home {
+  background: #FF00FF;
+} */
+
+</style>

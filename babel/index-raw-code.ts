@@ -1,142 +1,71 @@
 import { declare, BabelAPI } from '@babel/helper-plugin-utils';
-import type { NodePath } from '@babel/traverse';
+const { parse } = require('@babel/parser');
+
 import type { ImportDeclaration, VariableDeclaration } from '@babel/types';
+import { ConfigAPI, types as t, NodePath, template } from '@babel/core'
 
+const DEFAULT_SIGNATURE = 'babel-plugin-react-ssr';
 
-const hookAfterImport = ({
-  path, t, createElementIdentifierName, reactIdentifierName, filename,
-} : {
-  path: NodePath<ImportDeclaration>;
-  t: BabelAPI['types'];
-  createElementIdentifierName: Array<string>;
-  reactIdentifierName: Array<string>;
-  filename: string;
-}) => {
-      let lastPath: NodePath<VariableDeclaration>;
+const source = `
+// @ts-ignore
+const $$ReactCreateElement = (...arg) => {
+  console.log('123');
+  const CE = React.createElement;
+  return CE(...arg)
+}
+`;
 
-    // Создаем функцию
-    const functionBody = `
-      if (arguments[0] !== React.Fragment) {
-          const props = arguments[1] || {};
-          arguments[1] = {...props, customprops: "${filename}"};
-      }
-
-      const fn = React.createElement;
-      return fn.apply(React, arguments);
-    `;
-
-    const customCreateElement = t.functionDeclaration(
-      t.identifier('$$customCreateElement'),
-      [t.restElement(t.identifier('arguments'))],
-      t.blockStatement([
-        t.expressionStatement(t.identifier(functionBody))
-      ])
-    );
-
-    path.insertAfter([customCreateElement]);
-          // Добавляем функции именнованного экспорта
-          createElementIdentifierName.forEach((name) => {
-            const variableDeclaration = t.variableDeclaration('const', [
-              t.variableDeclarator(
-                t.identifier(name),
-                t.arrowFunctionExpression(
-                  [t.restElement(t.identifier('args'))],
-                  // Добавляем блочную область видимиости
-                  t.blockStatement([
-                    t.expressionStatement(t.identifier(functionBody))
-                  ])
-                )
-              )
-            ]);
-            // @ts-ignore
-            path.insertAfter([variableDeclaration]);
-          });
+const afterImport = ({ path, t }: { path: NodePath<ImportDeclaration>;  t: BabelAPI['types'];}) => {
+  const ast = parse(source);
+  path.insertAfter([ast]);
 }
 
-const DEFAULT_SIGNATURE = 'babel-plugin-react';
 const plugin = declare((api, { signatures = DEFAULT_SIGNATURE }) => {
   let filename = '';
   const { types } = api;
   const t = api.types;
 
+  let pathAfterImport: unknown = null;
+
   let reactIdentifierName = ['React'];
   let createElementIdentifierName = ['createElement'];
 
-
   return {
+    // inherits: syntaxDynamicImport,
     visitor: {
       Program: {
         exit(path: any, state: any) {
+          if (pathAfterImport) {
+            // @ts-ignore
+            pathAfterImport.insertAfter([ast]);
+          }
           // console.log('exit', { reactIdentifierName, createElementIdentifierName });
         },
         enter(path, state) {
           // @ts-ignore
           filename = state.filename;
         }
-      },
-      ImportDeclaration(path) {
-        const source = path.node.source.value;
-        // Сохраняем все import react
-        if (source === 'react') { // если мы импортируем 'react'...
+      }
 
-          let specifiers = [];
-          path.node.specifiers.forEach((specifier, index) => {
-            // какой идентификатор используется для импорта всего модуля или всех его экспортов
-            if (types.isImportDefaultSpecifier(specifier) || types.isImportNamespaceSpecifier(specifier)) {
-              reactIdentifierName.push(specifier.local.name);
-              reactIdentifierName = [...new Set(reactIdentifierName)];
-            }
-            // Проверяем спецефический метод
-            if (
-              types.isImportSpecifier(specifier) &&  // смотрим только на ImportSpecifier ({ createElement } from 'react')
-              // @ts-ignore
-              specifier.imported.name === 'createElement' // если текущий импортируемый идентификатор - это 'createElement'
-            ) {
-              createElementIdentifierName.push(specifier.local.name)
-              createElementIdentifierName = [...new Set(createElementIdentifierName)];
-            } else{
-              // @ts-ignore;
-              specifiers.push(specifier)
-            }
-          });
-          path.node.specifiers = specifiers; // перезаписываем
-        }
-        /// --------------------------------- ///
+      ,ImportDeclaration(path) {
         // Проверка следующего узла
         // @ts-ignore
         let sibling = path.getSibling(path.key + 1);
         if(!sibling.isImportDeclaration()) {
-          hookAfterImport({path, t, createElementIdentifierName, reactIdentifierName, filename});
+          afterImport({path, t});
         }
-      },
+      }
 
-      CallExpression(path) {
-        reactIdentifierName.forEach((name) => {
-          if (
-            // @ts-ignore
-            path.node.callee.object &&
-            // @ts-ignore
-            path.node.callee.object.name === name &&
-            // @ts-ignore
-            path.node.callee.property.name === 'createElement'
-          ) {
-            path.node.callee = t.identifier('$$customCreateElement');
+      ,CallExpression(path) {
+        if (t.isMemberExpression(path.node.callee)) {
+          // @ts-ignore
+          if (path.node.callee.object.name === "React" && path.node.callee.property.name === "createElement") {
+            path.node.callee = t.identifier('$$ReactCreateElement');
           }
-        });
-
-    },
-
-      // Add props to jsx element (support React.Fragment)
-      JSXOpeningElement(path) {
-        const newProp = types.jSXAttribute(
-          types.jSXIdentifier('customprops'),
-          types.stringLiteral(filename)
-        )
-        path.node.attributes.push(newProp)
-      },      
+        }
+      }
     },
   };
 });
 
 export default plugin;
-export const test = "";

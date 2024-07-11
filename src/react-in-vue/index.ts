@@ -1,12 +1,12 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import ExampleBabel from '../react/example';
+import { createRoot,  } from 'react-dom/client';
+import App from '../react/App';
 
 export default (container: unknown) => {
-    if (container) {
-        const root = createRoot(container);
-        root.render(ExampleBabel());
-      }
-      
-    return () => unmountComponentAtNode(container)
+    const root = createRoot(container as Element);
+    root.render(App() as React.ReactNode);
+  
+    return () => {
+      root.unmount()
+    }
 }

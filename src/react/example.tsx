@@ -37,7 +37,7 @@ const ExampleBabel: React.FC = () => {
   return (
       <>
         <div data-test={"1"}>
-          <div> component-body </div>
+          <div>component-body</div>
         </div>
       </>
   );

@@ -5,7 +5,8 @@
     "babel:build-plugin": "tsc --p tsconfig.babel.json --outDir babel-plugin",
     "babel:build-app": "NODE_ENV=development babel ./babel-source/index.tsx --out-file babel-dist/App.js",
     "babel": "npm run babel:build-plugin && npm run babel:build-app",
-    "webpack": "NODE_ENV=development webpack serve --progress --no-stats --config ./webpack.config.client.ts"
+    "webpack": "NODE_ENV=development webpack serve --progress --no-stats --config ./webpack.config.client.ts",
+    "webpack:react": "NODE_ENV=development webpack serve --progress --no-stats --config ./webpack.config.react.ts"
   },
   "dependencies": {
     "@babel/plugin-transform-react-jsx-source": "^7.24.7",
