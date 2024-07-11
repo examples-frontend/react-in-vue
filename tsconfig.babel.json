@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "allowJs": false,
+    "noImplicitAny": false,
+    "allowSyntheticDefaultImports": true,
+    "target": "esnext",
+    "strict": true,
+    "removeComments": true,
+    "moduleResolution": "node",
+    "rootDir": "./babel"
+  },
+  "files": [
+    "./babel/index.ts"
+  ]
+  // "include": [
+  //   "src/**/*.ts",
+  //   "src/**/*.tsx",
+  // ],
+}

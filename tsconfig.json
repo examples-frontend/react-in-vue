@@ -1,0 +1,45 @@
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "outDir": "./dist",
+    "jsx": "react",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "target": "ESNext",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "module": "esnext",
+    "strict": true,
+    "lib": [
+        "dom",
+        "dom.iterable",
+        "esnext"
+    ],
+    "types": [
+      "node",
+      "jest",
+      "webpack/module",
+      "@testing-library/jest-dom"
+    ],
+  },
+  "include": ["src"],
+  "files": [
+    "./src/main.d.ts",
+    "./src/vue.d.ts",
+    "src/client.tsx",
+    "src/client.vue",
+  ],
+  "paths": {
+  "vue/*": [
+      "@vue/compat/*"
+    ]
+  }
+  // "references": [{ "path": "./tsconfig.node.json" }]
+}
